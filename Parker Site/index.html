@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parking Reservations</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #444;
+        }
+
+        label {
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+
+        input {
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: calc(100% - 130px);
+            max-width: 400px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 1rem;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #reservationsList {
+            margin-top: 20px;
+            list-style: none;
+        }
+
+        .reservation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .reservation-item span {
+            flex: 1;
+        }
+
+        .action-buttons button {
+            margin-left: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .reservation-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .action-buttons {
+                margin-top: 10px;
+            }
+        }
+    </style>
+    <script>
+        async function fetchReservations() {
+            const parkingName = document.getElementById('parkingName').value.trim();
+            if (!parkingName) {
+                alert('Please enter a parking name.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://192.168.1.6:3000/reservations?parkingName=${encodeURIComponent(parkingName)}`);
+                if (!response.ok) throw new Error('Failed to fetch reservations.');
+
+                const reservations = await response.json();
+                const reservationsList = document.getElementById('reservationsList');
+                reservationsList.innerHTML = '';
+
+                reservations.forEach(reservation => {
+                    const listItem = createReservationItem(reservation);
+                    reservationsList.appendChild(listItem);
+                });
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+
+        function createReservationItem(reservation) {
+            const listItem = document.createElement('li');
+            listItem.className = 'reservation-item';
+            listItem.id = `reservation-${reservation.id}`;
+
+            const info = document.createElement('span');
+            info.textContent = `Reservation ID: ${reservation.id}, Name: ${reservation.name}, Status: ${reservation.status}`;
+
+            const actionButtons = document.createElement('div');
+            actionButtons.className = 'action-buttons';
+
+            const acceptButton = document.createElement('button');
+            acceptButton.textContent = 'Accept';
+            acceptButton.style.backgroundColor = '#28a745';
+            acceptButton.onclick = () => updateStatus(reservation.id, 'accepted', info);
+
+            const declineButton = document.createElement('button');
+            declineButton.textContent = 'Decline';
+            declineButton.style.backgroundColor = '#dc3545';
+            declineButton.onclick = () => updateStatus(reservation.id, 'declined', info);
+
+            actionButtons.appendChild(acceptButton);
+            actionButtons.appendChild(declineButton);
+
+            listItem.appendChild(info);
+            listItem.appendChild(actionButtons);
+
+            return listItem;
+        }
+
+        async function updateStatus(reservationId, status, infoElement) {
+            try {
+                const response = await fetch('http://192.168.1.6:3000/reservations/status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ reservationId, status }),
+                });
+
+                if (!response.ok) throw new Error('Failed to update reservation status.');
+
+                infoElement.textContent = infoElement.textContent.replace(/Status: \w+/, `Status: ${status}`);
+                alert('Reservation status updated successfully.');
+            } catch (error) {
+                alert(error.message);
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Parking Reservations</h1>
+    <div style="text-align: center; margin-bottom: 20px;">
+        <label for="parkingName">Enter Parking Name:</label>
+        <input type="text" id="parkingName" placeholder="e.g., Downtown Parking" />
+        <button onclick="fetchReservations()">Fetch Reservations</button>
+    </div>
+
+    <ul id="reservationsList"></ul>
+</body>
+</html>
