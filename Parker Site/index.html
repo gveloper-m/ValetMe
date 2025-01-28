@@ -99,7 +99,7 @@
             }
 
             try {
-                const response = await fetch(`http://192.168.1.6:3000/reservations?parkingName=${encodeURIComponent(parkingName)}`);
+                const response = await fetch(`http://172.20.10.7:3000/reservations?parkingName=${encodeURIComponent(parkingName)}`);
                 if (!response.ok) throw new Error('Failed to fetch reservations.');
 
                 const reservations = await response.json();
@@ -145,9 +145,11 @@
             return listItem;
         }
 
+
+       
         async function updateStatus(reservationId, status, infoElement) {
             try {
-                const response = await fetch('http://192.168.1.6:3000/reservations/status', {
+                const response = await fetch('http://172.20.10.7:3000/reservations/status', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -163,6 +165,45 @@
                 alert(error.message);
             }
         }
+
+        async function newparking() {
+  var name = document.getElementById('name').value;
+  var phone = document.getElementById('phone').value;
+  var mail = document.getElementById('mail').value;
+  var pname = document.getElementById('pname').value;
+  var pposition = document.getElementById('pposition').value;
+  var plong = document.getElementById('plong').value;
+  var plat = document.getElementById('plat').value;
+
+  var checkbox = document.getElementById('concent');
+
+  if (checkbox.checked) {
+    fetch('http://172.20.10.7:3000/newparking', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: name,
+      phone: phone,
+      mail: mail,
+      pname: pname,
+      pposition: pposition,
+      plong: plong,
+      plat: plat,
+      test: 'test'
+    })
+  })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));
+
+  }else{
+    alert("not checked");
+  }
+
+
+
+}
+       
     </script>
 </head>
 <body>
@@ -171,6 +212,24 @@
         <label for="parkingName">Enter Parking Name:</label>
         <input type="text" id="parkingName" placeholder="e.g., Downtown Parking" />
         <button onclick="fetchReservations()">Fetch Reservations</button>
+    </div>
+
+    <div class="parkingsetup">
+        <input type="text" placeholder="Your name" id="name">
+        <input type="tel" placeholder="Your phone" id="phone">
+        <input type="tel" placeholder="Your email" id="mail">
+        <input type="text" placeholder="Parking Name" id="pname">
+        <input type="text" placeholder="Parking's position in google maps (url)" id="pposition">
+        <input type="text" placeholder="long" id="plong">
+        <input type="text" placeholder="lat" id="plat">
+
+        <div>
+            <input type="checkbox" id="concent">
+            <span>I agree that i have iris payment, and with the terms of service</span>
+        </div>
+
+        <button onclick="newparking()">Submit</button>
+
     </div>
 
     <ul id="reservationsList"></ul>

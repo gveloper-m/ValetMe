@@ -240,6 +240,32 @@ app.post('/reservations/status', async (req, res) => {
 });
 
 
+app.post('/newparking', async (req, res) => {
+  const { name, phone, mail, pname, pposition, plong, plat } = req.body;
+
+  // Convert values to strings before logging
+  const nameStr = String(name);
+  const phoneStr = String(phone);
+  const mailStr = String(mail);
+  const pnameStr = String(pname);
+  const ppositionStr = String(pposition);
+  const plongStr = String(plong);
+  const platStr = String(plat);
+
+  console.log({
+    name: nameStr,
+    phone: phoneStr,
+    mail: mailStr,
+    pname: pnameStr,
+    pposition: ppositionStr,
+    plong: plongStr,
+    plat: platStr
+  });
+
+  res.status(200).json({ message: 'new parking data received' });
+});
+
+
 
 // Start the server
 app.listen(port, () => {
